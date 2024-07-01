@@ -6,6 +6,7 @@ import {
     insertFood,
     updateFoodById,
     deleteFoodById,
+    updateRatingFoodById,
 } from "../models/FoodModel.js";
 
 // get all Foods
@@ -19,7 +20,6 @@ export const showFoods=(req,res)=>{
     });
 };
 
-
 // get single Food
 export const showFoodById=(req,res)=>{
     getFoodById(req.params.id,(err,results)=> {
@@ -32,9 +32,24 @@ export const showFoodById=(req,res)=>{
 };
 
 // create Food
-export const createFood=(req,res)=>{
-    const data = req.body;
-    insertFood(data,(err,results)=> {
+export const createFood = (req, res) => {
+    const { name, price, type, discount, desc, category, ingredients, statuses } = req.body;
+    const file = req.files["image"];
+    const parsedIngredients = JSON.parse(ingredients);
+    const parsedStatuses = JSON.parse(statuses);
+
+    const foodData = {
+        name,
+        price: parseInt(price),
+        type,
+        discount: parseFloat(discount),
+        desc,
+        category: parseInt(category),
+        ingredients: parsedIngredients,
+        statuses: parsedStatuses
+    };
+
+    insertFood(foodData,file,(err,results)=> {
         if (err) {
             res.send(err);
         }else {
@@ -44,10 +59,37 @@ export const createFood=(req,res)=>{
 };
 
 // update Food
-export const updateFood=(req,res)=>{
+export const updateFood = (req, res) => {
+    const foodId = req.params.id;
+    const { name, price, type, discount, desc, category, ingredients, statuses, isImageUpdated } = req.body;
+    const file = req.files ? req.files["image"] : null;
+    const parsedIngredients = JSON.parse(ingredients);
+    const parsedStatuses = JSON.parse(statuses);
+
+    const foodData = {
+        name,
+        price: parseInt(price),
+        type,
+        discount: parseFloat(discount),
+        desc,
+        category: parseInt(category),
+        ingredients: parsedIngredients,
+        statuses: parsedStatuses,
+        isImageUpdated: isImageUpdated === 'true'
+    };
+
+    updateFoodById(foodId, foodData, file, (err, results) => {
+        if (err) {
+            res.send(err);
+        } else {
+            res.json(results);
+        }
+    });
+};
+export const updateRatingFood=(req,res)=>{
     const data = req.body;
     const id = req.params.id;
-    updateFoodById(data,id,(err,results)=> {
+    updateRatingFoodById(data,id,(err,results)=> {
         if (err) {
             res.send(err);
         }else {
@@ -55,7 +97,6 @@ export const updateFood=(req,res)=>{
         }
     });
 };
-
 
 // delete Food
 export const deleteFood=(req,res)=>{
